@@ -14,12 +14,26 @@
 
 
 import os
+from typing import Any
 
 import pytest
-from playwright.sync_api import Page
+from playwright.sync_api import Page, expect
 
 from e2e_playwright.conftest import ImageCompareFunction
 from e2e_playwright.shared.app_utils import expect_no_skeletons
+
+
+@pytest.fixture(scope="module")
+def browser_context_args(browser_context_args: dict[str, Any]) -> dict[str, Any]:
+    """Override browser context to start with dark mode color scheme.
+
+    Playwright defaults to light mode color scheme, and the `browser_context_args`
+    is applied on the file level.
+    """
+    return {
+        **browser_context_args,
+        "color_scheme": "dark",
+    }
 
 
 @pytest.fixture(scope="module")
@@ -54,6 +68,7 @@ def configure_custom_dark_theme():
     os.environ["STREAMLIT_THEME_DARK_CODE_TEXT_COLOR"] = "#d4c6f5"  # lavender
     os.environ["STREAMLIT_THEME_DARK_LINK_COLOR"] = "#CD1C18"  # chili red
     yield
+    del os.environ["STREAMLIT_THEME_BASE"]
     del os.environ["STREAMLIT_THEME_PRIMARY_COLOR"]
     del os.environ["STREAMLIT_THEME_BACKGROUND_COLOR"]
     del os.environ["STREAMLIT_THEME_SECONDARY_BACKGROUND_COLOR"]
@@ -70,6 +85,17 @@ def configure_custom_dark_theme():
 
 
 @pytest.mark.usefixtures("configure_custom_dark_theme")
+def test_auto_theme_with_dark_preference(
+    app: Page, assert_snapshot: ImageCompareFunction
+):
+    """Test that the auto theme is the Custom Theme Dark when the system preference is dark."""
+    # Make sure that all elements are rendered and no skeletons are shown:
+    expect_no_skeletons(app, timeout=25000)
+
+    assert_snapshot(app, name="custom_theme_auto_dark", image_threshold=0.0003)
+
+
+@pytest.mark.usefixtures("configure_custom_dark_theme")
 def test_custom_dark_theme(app: Page, assert_snapshot: ImageCompareFunction):
     """Test that the custom dark theme is rendered correctly."""
     # Make sure that all elements are rendered and no skeletons are shown:
@@ -83,10 +109,11 @@ def test_custom_dark_theme(app: Page, assert_snapshot: ImageCompareFunction):
     settings_dialog = app.get_by_test_id("stDialog")
     settings_dialog.get_by_role("combobox").click()
 
-    light_theme_option = app.get_by_test_id("stSelectboxVirtualDropdown").get_by_text(
+    # Select Custom Theme Dark
+    dark_theme_option = app.get_by_test_id("stSelectboxVirtualDropdown").get_by_text(
         "Dark"
     )
-    light_theme_option.click()
+    dark_theme_option.click()
 
     # Close settings dialog
     settings_dialog.get_by_role("button", name="Close").click()
@@ -114,10 +141,10 @@ def test_custom_light_theme_with_no_light_configs(
     settings_dialog.get_by_role("combobox").click()
 
     # Select Custom Theme Light
-    dark_theme_option = app.get_by_test_id("stSelectboxVirtualDropdown").get_by_text(
+    light_theme_option = app.get_by_test_id("stSelectboxVirtualDropdown").get_by_text(
         "Light"
     )
-    dark_theme_option.click()
+    light_theme_option.click()
 
     # Close settings dialog
     settings_dialog.get_by_role("button", name="Close").click()
@@ -125,3 +152,43 @@ def test_custom_light_theme_with_no_light_configs(
     assert_snapshot(
         app, name="custom_light_theme_no_light_configs", image_threshold=0.0003
     )
+
+
+@pytest.mark.usefixtures("configure_custom_dark_theme")
+def test_custom_dark_theme_settings_dialog(
+    app: Page, assert_snapshot: ImageCompareFunction
+):
+    """Test that the settings dialog shows correct options with dark theme configs."""
+    # Make sure that all elements are rendered and no skeletons are shown:
+    expect_no_skeletons(app, timeout=25000)
+
+    # Open the settings dialog
+    app.get_by_test_id("stMainMenu").click()
+    main_menu_list = app.get_by_test_id("stMainMenuList")
+    main_menu_list.get_by_text("Settings").click()
+
+    # Check that the auto theme is selected
+    settings_dialog = app.get_by_test_id("stDialog")
+    expect(settings_dialog).to_be_visible()
+    expect(settings_dialog).to_contain_text("Use system setting")
+
+    assert_snapshot(
+        settings_dialog.get_by_role("dialog"),
+        name="custom_dark_theme_settings_dialog",
+        image_threshold=0.0003,
+        # Hide version info so that snapshots don't change across versions.
+        style="[data-testid='stVersionInfo'] { display: none !important; }",
+    )
+
+    # Open the theme selector dropdown
+    theme_selector = settings_dialog.get_by_role("combobox")
+    theme_selector.click()
+
+    # Check that 3 options (auto, light, dark) are shown
+    options_list = app.get_by_test_id("stSelectboxVirtualDropdown").get_by_role(
+        "option"
+    )
+    expect(options_list).to_have_count(3)
+    expect(options_list.get_by_text("Light")).to_be_visible()
+    expect(options_list.get_by_text("Dark")).to_be_visible()
+    expect(options_list.get_by_text("Use system setting")).to_be_visible()

@@ -74,7 +74,8 @@ def test_auto_theme_with_light_preference(
 ):
     """Test that the auto theme is the Custom Theme Light when the system preference is light."""
     # Browser preference should be light by default
-    app.evaluate("matchMedia('(prefers-color-scheme: light)').matches")
+    is_light_mode = app.evaluate("matchMedia('(prefers-color-scheme: light)').matches")
+    assert is_light_mode is True
 
     # Make sure that all elements are rendered and no skeletons are shown:
     expect_no_skeletons(app, timeout=25000)
@@ -146,7 +147,8 @@ def test_custom_light_theme_settings_dialog(
 ):
     """Test that the settings dialog shows correct options with light theme configs."""
     # Browser preference should be light by default
-    app.evaluate("matchMedia('(prefers-color-scheme: light)').matches")
+    is_light_mode = app.evaluate("matchMedia('(prefers-color-scheme: light)').matches")
+    assert is_light_mode is True
 
     # Make sure that all elements are rendered and no skeletons are shown:
     expect_no_skeletons(app, timeout=25000)
