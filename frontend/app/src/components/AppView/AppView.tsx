@@ -14,13 +14,7 @@
  * limitations under the License.
  */
 
-import React, {
-  ReactElement,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react"
+import React, { ReactElement, useCallback, useEffect, useState } from "react"
 
 import EventContainer from "@streamlit/app/src/components/EventContainer"
 import Header from "@streamlit/app/src/components/Header"
@@ -43,7 +37,6 @@ import {
   ContainerContentsWrapper,
   FileUploadClient,
   IGuestToHostMessage,
-  LibContext,
   Profiler,
   ThemeContext,
   useExecuteWhenChanged,
@@ -106,6 +99,10 @@ export interface AppViewProps {
   disableScrolling: boolean
 
   currentPageScriptHash: string
+
+  addScriptFinishedHandler: (func: () => void) => void
+
+  removeScriptFinishedHandler: (func: () => void) => void
 }
 
 /**
@@ -132,6 +129,8 @@ function AppView(props: AppViewProps): ReactElement {
     showPadding,
     disableScrolling,
     currentPageScriptHash,
+    addScriptFinishedHandler,
+    removeScriptFinishedHandler,
   } = props
 
   useEffect(() => {
@@ -147,8 +146,6 @@ function AppView(props: AppViewProps): ReactElement {
 
   const { initialSidebarState, widgetsDisabled, showToolbar } = useAppContext()
 
-  const { addScriptFinishedHandler, removeScriptFinishedHandler } =
-    useContext(LibContext)
   const { activeTheme } = useRequiredContext(ThemeContext)
 
   const { innerWidth } = useWindowDimensionsContext()

@@ -151,8 +151,6 @@ export const renderWithContexts = (
   const defaultLibContextProps = {
     isFullScreen: false,
     setFullScreen: vi.fn(),
-    addScriptFinishedHandler: vi.fn(),
-    removeScriptFinishedHandler: vi.fn(),
     onPageChange: vi.fn(),
     currentPageScriptHash: "",
     libConfig: {},

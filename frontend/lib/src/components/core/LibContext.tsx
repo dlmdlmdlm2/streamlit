@@ -55,15 +55,6 @@ export interface LibContextProps {
   setFullScreen: (value: boolean) => void
 
   /**
-   * Add a callback that will be called every time the app's script finishes
-   * executing.
-   */
-  addScriptFinishedHandler: (func: () => void) => void
-
-  /** Remove a previously-added scriptFinishedHandler callback. */
-  removeScriptFinishedHandler: (func: () => void) => void
-
-  /**
    * Change the page in a multi-page app.
    * @see PageLink
    */
@@ -119,8 +110,6 @@ const noOpEndpoints: StreamlitEndpoints = {
 export const LibContext = createContext<LibContextProps>({
   isFullScreen: false,
   setFullScreen: () => {},
-  addScriptFinishedHandler: () => {},
-  removeScriptFinishedHandler: () => {},
   onPageChange: () => {},
   currentPageScriptHash: "",
   libConfig: {},

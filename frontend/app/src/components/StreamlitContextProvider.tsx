@@ -59,8 +59,6 @@ type AppContextValues = {
 type LibContextValues = {
   isFullScreen: boolean
   setFullScreen: (value: boolean) => void
-  addScriptFinishedHandler: (func: () => void) => void
-  removeScriptFinishedHandler: (func: () => void) => void
   onPageChange: (pageScriptHash: string) => void
   currentPageScriptHash: string
   libConfig: LibConfig
@@ -114,8 +112,6 @@ const StreamlitContextProvider: React.FC<StreamlitContextProviderProps> = ({
   // LibContext
   isFullScreen,
   setFullScreen,
-  addScriptFinishedHandler,
-  removeScriptFinishedHandler,
   libConfig,
   fragmentIdsThisRun,
   locale,
@@ -174,8 +170,6 @@ const StreamlitContextProvider: React.FC<StreamlitContextProviderProps> = ({
     () => ({
       isFullScreen,
       setFullScreen,
-      addScriptFinishedHandler,
-      removeScriptFinishedHandler,
       onPageChange,
       currentPageScriptHash,
       libConfig,
@@ -186,8 +180,6 @@ const StreamlitContextProvider: React.FC<StreamlitContextProviderProps> = ({
     [
       isFullScreen,
       setFullScreen,
-      addScriptFinishedHandler,
-      removeScriptFinishedHandler,
       onPageChange,
       currentPageScriptHash,
       libConfig,
