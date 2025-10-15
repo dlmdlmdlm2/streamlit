@@ -82,6 +82,7 @@ def configure_custom_dark_sidebar_theme():
     )
     os.environ["STREAMLIT_THEME_DARK_SIDEBAR_LINK_COLOR"] = "#CD1C18"  # chili red
     yield
+    del os.environ["STREAMLIT_THEME_BASE"]
     del os.environ["STREAMLIT_THEME_BASE_FONT_SIZE"]
     del os.environ["STREAMLIT_THEME_PRIMARY_COLOR"]
     del os.environ["STREAMLIT_THEME_TEXT_COLOR"]
