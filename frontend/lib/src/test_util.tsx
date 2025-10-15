@@ -30,6 +30,10 @@ import {
 import { FlexContext } from "./components/core/Layout/FlexContext"
 import { Direction } from "./components/core/Layout/utils"
 import { LibContext, LibContextProps } from "./components/core/LibContext"
+import {
+  ScriptRunContext,
+  ScriptRunContextProps,
+} from "./components/core/ScriptRunContext"
 import ThemeProvider from "./components/core/ThemeProvider"
 import { WindowDimensionsProvider } from "./components/shared/WindowDimensions/Provider"
 import { ComponentRegistry } from "./components/widgets/CustomComponent/ComponentRegistry"
@@ -44,12 +48,19 @@ const flexContextValue = {
   isInHorizontalLayout: false,
 }
 
+const defaultScriptRunContextValue = {
+  scriptRunState: ScriptRunState.NOT_RUNNING,
+  scriptRunId: "script run 123",
+}
+
 export const TestAppWrapper: FC<PropsWithChildren> = ({ children }) => {
   return (
     <ThemeProvider theme={mockTheme.emotion}>
       <WindowDimensionsProvider>
         <FlexContext.Provider value={flexContextValue}>
-          {children}
+          <ScriptRunContext.Provider value={defaultScriptRunContextValue}>
+            {children}
+          </ScriptRunContext.Provider>
         </FlexContext.Provider>
       </WindowDimensionsProvider>
     </ThemeProvider>
@@ -91,18 +102,20 @@ export interface RenderWithContextsResult extends RenderResult {
    * Re-render the component with updated context values.
    * @param component The component to render (usually the same component with updated props)
    * @param newLibContextProps New LibContext overrides to merge with existing values
+   * @param newScriptRunContextProps New ScriptRunContext overrides to merge with existing values
    * @param newFormsContextProps New FormsContext overrides to merge with existing values
    */
   rerenderWithContexts: (
     component: ReactElement,
     newLibContextProps?: Partial<LibContextProps>,
+    newScriptRunContextProps?: Partial<ScriptRunContextProps>,
     newFormsContextProps?: Partial<FormsContextProps>
   ) => void
 }
 
 /**
  * Use react-testing-library to render a ReactElement. The element will be
- * wrapped in our LibContext.Provider and FormsContext.Provider.
+ * wrapped in our LibContext.Provider, ScriptRunContext.Provider and FormsContext.Provider.
  *
  * Returns an extended RenderResult with a `rerenderWithContexts` method that
  * allows updating context values during re-renders.
@@ -110,6 +123,7 @@ export interface RenderWithContextsResult extends RenderResult {
 export const renderWithContexts = (
   component: ReactElement,
   overrideLibContextProps: Partial<LibContextProps> = {},
+  overrideScriptRunContextProps: Partial<ScriptRunContextProps> = {},
   overrideFormsContextProps?: Partial<FormsContextProps>
 ): RenderWithContextsResult => {
   const defaultLibContextProps = {
@@ -125,9 +139,12 @@ export const renderWithContexts = (
     libConfig: {},
     fragmentIdsThisRun: [],
     locale: "en-US",
+    componentRegistry: new ComponentRegistry(mockEndpoints()),
+  }
+
+  const defaultScriptRunContextProps = {
     scriptRunState: ScriptRunState.NOT_RUNNING,
     scriptRunId: "script run 123",
-    componentRegistry: new ComponentRegistry(mockEndpoints()),
   }
 
   const defaultFormsContextProps = {
@@ -138,6 +155,10 @@ export const renderWithContexts = (
   let currentLibContextProps = {
     ...defaultLibContextProps,
     ...overrideLibContextProps,
+  }
+  let currentScriptRunContextProps = {
+    ...defaultScriptRunContextProps,
+    ...overrideScriptRunContextProps,
   }
   let currentFormsContextProps = {
     ...defaultFormsContextProps,
@@ -150,7 +171,9 @@ export const renderWithContexts = (
         <FlexContext.Provider value={flexContextValue}>
           <LibContext.Provider value={currentLibContextProps}>
             <FormsContext.Provider value={currentFormsContextProps}>
-              {children}
+              <ScriptRunContext.Provider value={currentScriptRunContextProps}>
+                {children}
+              </ScriptRunContext.Provider>
             </FormsContext.Provider>
           </LibContext.Provider>
         </FlexContext.Provider>
@@ -167,6 +190,7 @@ export const renderWithContexts = (
     rerenderWithContexts: (
       newComponent: ReactElement,
       newLibContextProps?: Partial<LibContextProps>,
+      newScriptRunContextProps?: Partial<ScriptRunContextProps>,
       newFormsContextProps?: Partial<FormsContextProps>
     ): void => {
       // Update context values if provided
@@ -174,6 +198,12 @@ export const renderWithContexts = (
         currentLibContextProps = {
           ...currentLibContextProps,
           ...newLibContextProps,
+        }
+      }
+      if (newScriptRunContextProps) {
+        currentScriptRunContextProps = {
+          ...currentScriptRunContextProps,
+          ...newScriptRunContextProps,
         }
       }
       if (newFormsContextProps) {
