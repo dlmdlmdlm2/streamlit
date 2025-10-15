@@ -32,6 +32,8 @@ import {
   ScriptRunContextProps,
   ScriptRunState,
   ThemeConfig,
+  ThemeContext,
+  ThemeContextProps,
   useRequiredContext,
 } from "@streamlit/lib"
 import { IAppPage, IGitInfo, Logo, PageConfig } from "@streamlit/protobuf"
@@ -59,15 +61,19 @@ type LibContextValues = {
   setFullScreen: (value: boolean) => void
   addScriptFinishedHandler: (func: () => void) => void
   removeScriptFinishedHandler: (func: () => void) => void
-  activeTheme: ThemeConfig
-  setTheme: (theme: ThemeConfig) => void
-  availableThemes: ThemeConfig[]
   onPageChange: (pageScriptHash: string) => void
   currentPageScriptHash: string
   libConfig: LibConfig
   fragmentIdsThisRun: Array<string>
   locale: typeof window.navigator.language
   componentRegistry: ComponentRegistry
+}
+
+// Type for ThemeContext props
+type ThemeContextValues = {
+  activeTheme: ThemeConfig
+  setTheme: (theme: ThemeConfig) => void
+  availableThemes: ThemeConfig[]
 }
 
 // Type for ScriptRunContext props
@@ -83,6 +89,7 @@ type FormsContextValues = {
 export type StreamlitContextProviderProps = PropsWithChildren<
   AppContextValues &
     LibContextValues &
+    ThemeContextValues &
     ScriptRunContextValues &
     FormsContextValues
 >
@@ -109,13 +116,14 @@ const StreamlitContextProvider: React.FC<StreamlitContextProviderProps> = ({
   setFullScreen,
   addScriptFinishedHandler,
   removeScriptFinishedHandler,
-  activeTheme,
-  setTheme,
-  availableThemes,
   libConfig,
   fragmentIdsThisRun,
   locale,
   componentRegistry,
+  // ThemeContext
+  activeTheme,
+  setTheme,
+  availableThemes,
   // ScriptRunContext
   scriptRunState,
   scriptRunId,
@@ -168,9 +176,6 @@ const StreamlitContextProvider: React.FC<StreamlitContextProviderProps> = ({
       setFullScreen,
       addScriptFinishedHandler,
       removeScriptFinishedHandler,
-      activeTheme,
-      setTheme,
-      availableThemes,
       onPageChange,
       currentPageScriptHash,
       libConfig,
@@ -183,9 +188,6 @@ const StreamlitContextProvider: React.FC<StreamlitContextProviderProps> = ({
       setFullScreen,
       addScriptFinishedHandler,
       removeScriptFinishedHandler,
-      activeTheme,
-      setTheme,
-      availableThemes,
       onPageChange,
       currentPageScriptHash,
       libConfig,
@@ -193,6 +195,16 @@ const StreamlitContextProvider: React.FC<StreamlitContextProviderProps> = ({
       locale,
       componentRegistry,
     ]
+  )
+
+  // Memoized object for ThemeContext values
+  const themeContextProps = useMemo<ThemeContextProps>(
+    () => ({
+      activeTheme,
+      setTheme,
+      availableThemes,
+    }),
+    [activeTheme, setTheme, availableThemes]
   )
 
   // Memoized object for ScriptRunContext values
@@ -213,22 +225,25 @@ const StreamlitContextProvider: React.FC<StreamlitContextProviderProps> = ({
   /**
    * Context Provider Ordering (Outer → Inner):
    * 1. AppContext - Changes least frequently (app-level config)
-   * 2. LibContext - Changes moderately (theme, fullscreen, etc.)
-   * 3. FormsContext - Changes when forms are modified
-   * 4. ScriptRunContext - Changes most frequently (every script run)
+   * 2. LibContext - Changes moderately (fullscreen, locale, etc.)
+   * 3. ThemeContext - Changes when user switches theme (infrequent, user-initiated)
+   * 4. FormsContext - Changes when forms are modified (moderate frequency)
+   * 5. ScriptRunContext - Changes most frequently (every script run)
    *
    * Performance: More frequently changing contexts are innermost to minimize
    * cascading re-renders. When ScriptRunContext changes (every script run),
-   * only its consumers re-render, not FormsContext consumers.
+   * only its consumers re-render, not FormsContext or ThemeContext consumers.
    */
   return (
     <AppContext.Provider value={appContextProps}>
       <LibContext.Provider value={libContextProps}>
-        <FormsContext.Provider value={formsContextProps}>
-          <ScriptRunContext.Provider value={scriptRunContextProps}>
-            {children}
-          </ScriptRunContext.Provider>
-        </FormsContext.Provider>
+        <ThemeContext.Provider value={themeContextProps}>
+          <FormsContext.Provider value={formsContextProps}>
+            <ScriptRunContext.Provider value={scriptRunContextProps}>
+              {children}
+            </ScriptRunContext.Provider>
+          </FormsContext.Provider>
+        </ThemeContext.Provider>
       </LibContext.Provider>
     </AppContext.Provider>
   )

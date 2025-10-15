@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-import React, { ReactElement, useContext } from "react"
+import React, { ReactElement } from "react"
 
 import { getLuminance } from "color2k"
 
 import {
   createTheme,
-  LibContext,
   ThemeConfig,
+  ThemeContext,
   ThemeProvider,
+  useRequiredContext,
 } from "@streamlit/lib"
 import { CustomThemeConfig } from "@streamlit/protobuf"
 import { notNullOrUndefined } from "@streamlit/utils"
@@ -116,7 +117,7 @@ const ThemedSidebar = ({
   children,
   ...sidebarProps
 }: Omit<SidebarProps, "chevronDownshift">): ReactElement => {
-  const { activeTheme } = useContext(LibContext)
+  const { activeTheme } = useRequiredContext(ThemeContext)
   const sidebarTheme = createSidebarTheme(activeTheme)
 
   return (

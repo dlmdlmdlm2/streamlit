@@ -45,7 +45,9 @@ import {
   IGuestToHostMessage,
   LibContext,
   Profiler,
+  ThemeContext,
   useExecuteWhenChanged,
+  useRequiredContext,
   useWindowDimensionsContext,
   WidgetStateManager,
 } from "@streamlit/lib"
@@ -145,11 +147,9 @@ function AppView(props: AppViewProps): ReactElement {
 
   const { initialSidebarState, widgetsDisabled, showToolbar } = useAppContext()
 
-  const {
-    addScriptFinishedHandler,
-    removeScriptFinishedHandler,
-    activeTheme,
-  } = useContext(LibContext)
+  const { addScriptFinishedHandler, removeScriptFinishedHandler } =
+    useContext(LibContext)
+  const { activeTheme } = useRequiredContext(ThemeContext)
 
   const { innerWidth } = useWindowDimensionsContext()
 
