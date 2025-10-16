@@ -2213,7 +2213,6 @@ export class App extends PureComponent<Props, State> {
               elements={elements}
               widgetMgr={this.widgetMgr}
               uploadClient={this.uploadClient}
-              appLogo={elements.logo}
               navigationPosition={effectiveNavigationPosition}
               wideMode={userSettings.wideMode}
               embedded={isEmbed()}

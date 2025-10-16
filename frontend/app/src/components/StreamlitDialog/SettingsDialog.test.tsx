@@ -71,7 +71,12 @@ describe("SettingsDialog", () => {
     const context = getContext()
     const themeContext = getThemeContext({ availableThemes })
 
-    renderWithContexts(<SettingsDialog {...props} />, context, themeContext)
+    renderWithContexts(
+      <SettingsDialog {...props} />,
+      context,
+      {},
+      themeContext
+    )
 
     expect(screen.getByText("Settings")).toBeVisible()
   })
@@ -83,7 +88,12 @@ describe("SettingsDialog", () => {
     })
     const context = getContext()
     const themeContext = getThemeContext()
-    renderWithContexts(<SettingsDialog {...props} />, context, themeContext)
+    renderWithContexts(
+      <SettingsDialog {...props} />,
+      context,
+      {},
+      themeContext
+    )
 
     await user.click(screen.getByText("Run on save"))
 
@@ -98,7 +108,12 @@ describe("SettingsDialog", () => {
     const props = getProps()
     const context = getContext()
     const themeContext = getThemeContext()
-    renderWithContexts(<SettingsDialog {...props} />, context, themeContext)
+    renderWithContexts(
+      <SettingsDialog {...props} />,
+      context,
+      {},
+      themeContext
+    )
     expect(screen.getByText("Wide mode")).toBeVisible()
 
     await user.click(screen.getByText("Wide mode"))
@@ -115,7 +130,12 @@ describe("SettingsDialog", () => {
     const context = getContext()
     const themeContext = getThemeContext({ availableThemes })
 
-    renderWithContexts(<SettingsDialog {...props} />, context, themeContext)
+    renderWithContexts(
+      <SettingsDialog {...props} />,
+      context,
+      {},
+      themeContext
+    )
 
     expect(screen.getByText("Choose app theme")).toBeVisible()
 
@@ -132,7 +152,12 @@ describe("SettingsDialog", () => {
       activeTheme: customTheme,
     })
 
-    renderWithContexts(<SettingsDialog {...props} />, context, themeContext)
+    renderWithContexts(
+      <SettingsDialog {...props} />,
+      context,
+      {},
+      themeContext
+    )
 
     const selectbox = screen.getByRole("combobox")
     expect(selectbox).toBeVisible()
@@ -149,7 +174,12 @@ describe("SettingsDialog", () => {
     const context = getContext()
     const themeContext = getThemeContext({ availableThemes })
 
-    renderWithContexts(<SettingsDialog {...props} />, context, themeContext)
+    renderWithContexts(
+      <SettingsDialog {...props} />,
+      context,
+      {},
+      themeContext
+    )
 
     expect(screen.getByText("Light")).toBeVisible()
 
@@ -169,7 +199,12 @@ describe("SettingsDialog", () => {
       availableThemes,
     })
 
-    renderWithContexts(<SettingsDialog {...props} />, context, themeContext)
+    renderWithContexts(
+      <SettingsDialog {...props} />,
+      context,
+      {},
+      themeContext
+    )
 
     expect(screen.getByText("Dark")).toBeVisible()
 
@@ -184,7 +219,12 @@ describe("SettingsDialog", () => {
     const context = getContext()
     const themeContext = getThemeContext()
 
-    renderWithContexts(<SettingsDialog {...props} />, context, themeContext)
+    renderWithContexts(
+      <SettingsDialog {...props} />,
+      context,
+      {},
+      themeContext
+    )
 
     const versionRegex = /Made with Streamlit\s*42\.42\.42/
     const versionText = screen.getByText(versionRegex)
@@ -199,7 +239,12 @@ describe("SettingsDialog", () => {
     const context = getContext()
     const themeContext = getThemeContext()
 
-    renderWithContexts(<SettingsDialog {...props} />, context, themeContext)
+    renderWithContexts(
+      <SettingsDialog {...props} />,
+      context,
+      {},
+      themeContext
+    )
 
     const versionRegex = /^Made with Streamlit.*/
     const nonExistentText = screen.queryByText(versionRegex)

@@ -26,6 +26,7 @@ import {
   mockEndpoints,
   NavigationContextProps,
   render,
+  SidebarConfigContextProps,
   ThemeConfig,
 } from "@streamlit/lib"
 import { CustomThemeConfig, PageConfig } from "@streamlit/protobuf"
@@ -39,7 +40,6 @@ function getProps(props: Partial<SidebarProps> = {}): SidebarProps {
     hasElements: true,
     isCollapsed: false,
     onToggleCollapse: vi.fn(),
-    appLogo: null,
     ...props,
   }
 }
@@ -48,14 +48,22 @@ function getAppContextOutput(
   context: Partial<AppContextProps> = {}
 ): AppContextProps {
   return {
+    widgetsDisabled: false,
+    gitInfo: null,
+    showToolbar: true,
+    ...context,
+  }
+}
+
+function getSidebarConfigContextOutput(
+  context: Partial<SidebarConfigContextProps> = {}
+): SidebarConfigContextProps {
+  return {
     initialSidebarState: PageConfig.SidebarState.AUTO,
     appLogo: null,
     sidebarChevronDownshift: 0,
     expandSidebarNav: false,
     hideSidebarNav: false,
-    widgetsDisabled: false,
-    gitInfo: null,
-    showToolbar: true,
     ...context,
   }
 }
@@ -75,10 +83,15 @@ function getNavigationContextOutput(
 
 function setupContextMocks(options?: {
   appContext?: Partial<AppContextProps>
+  sidebarConfigContext?: Partial<SidebarConfigContextProps>
   navigationContext?: Partial<NavigationContextProps>
 }): void {
   vi.spyOn(StreamlitContextProviderModule, "useAppContext").mockReturnValue(
     getAppContextOutput(options?.appContext || {})
+  )
+
+  vi.spyOn(LibModule, "useSidebarConfigContext").mockReturnValue(
+    getSidebarConfigContextOutput(options?.sidebarConfigContext || {})
   )
 
   vi.spyOn(LibModule, "useNavigationContext").mockReturnValue(
