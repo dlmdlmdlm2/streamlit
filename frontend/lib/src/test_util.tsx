@@ -31,6 +31,10 @@ import { FlexContext } from "./components/core/Layout/FlexContext"
 import { Direction } from "./components/core/Layout/utils"
 import { LibContext, LibContextProps } from "./components/core/LibContext"
 import {
+  NavigationContext,
+  NavigationContextProps,
+} from "./components/core/NavigationContext"
+import {
   ScriptRunContext,
   ScriptRunContextProps,
 } from "./components/core/ScriptRunContext"
@@ -64,15 +68,25 @@ const defaultThemeContextValue = {
   availableThemes: [],
 }
 
+const defaultNavigationContextValue = {
+  pageLinkBaseUrl: "",
+  currentPageScriptHash: "",
+  onPageChange: vi.fn(),
+  navSections: [],
+  appPages: [],
+}
+
 export const TestAppWrapper: FC<PropsWithChildren> = ({ children }) => {
   return (
     <ThemeProvider theme={mockTheme.emotion}>
       <WindowDimensionsProvider>
         <FlexContext.Provider value={flexContextValue}>
           <ThemeContext.Provider value={defaultThemeContextValue}>
-            <ScriptRunContext.Provider value={defaultScriptRunContextValue}>
-              {children}
-            </ScriptRunContext.Provider>
+            <NavigationContext.Provider value={defaultNavigationContextValue}>
+              <ScriptRunContext.Provider value={defaultScriptRunContextValue}>
+                {children}
+              </ScriptRunContext.Provider>
+            </NavigationContext.Provider>
           </ThemeContext.Provider>
         </FlexContext.Provider>
       </WindowDimensionsProvider>
@@ -115,11 +129,12 @@ export interface RenderWithContextsResult extends RenderResult {
    * Re-render the component with updated context values.
    *
    * Parameter order matches the provider nesting order (outer → inner):
-   * LibContext → ThemeContext → FormsContext → ScriptRunContext
+   * LibContext → ThemeContext → NavigationContext → FormsContext → ScriptRunContext
    *
    * @param component The component to render (usually the same component with updated props)
    * @param newLibContextProps New LibContext overrides to merge with existing values
    * @param newThemeContextProps New ThemeContext overrides to merge with existing values
+   * @param newNavigationContextProps New NavigationContext overrides to merge with existing values
    * @param newFormsContextProps New FormsContext overrides to merge with existing values
    * @param newScriptRunContextProps New ScriptRunContext overrides to merge with existing values
    */
@@ -127,6 +142,7 @@ export interface RenderWithContextsResult extends RenderResult {
     component: ReactElement,
     newLibContextProps?: Partial<LibContextProps>,
     newThemeContextProps?: Partial<ThemeContextProps>,
+    newNavigationContextProps?: Partial<NavigationContextProps>,
     newFormsContextProps?: Partial<FormsContextProps>,
     newScriptRunContextProps?: Partial<ScriptRunContextProps>
   ) => void
@@ -134,10 +150,10 @@ export interface RenderWithContextsResult extends RenderResult {
 
 /**
  * Use react-testing-library to render a ReactElement. The element will be
- * wrapped in our LibContext.Provider, ThemeContext.Provider, FormsContext.Provider, and ScriptRunContext.Provider.
+ * wrapped in our LibContext.Provider, ThemeContext.Provider, NavigationContext.Provider, FormsContext.Provider, and ScriptRunContext.Provider.
  *
  * Parameter order matches the provider nesting order (outer → inner):
- * LibContext → ThemeContext → FormsContext → ScriptRunContext
+ * LibContext → ThemeContext → NavigationContext → FormsContext → ScriptRunContext
  *
  * Returns an extended RenderResult with a `rerenderWithContexts` method that
  * allows updating context values during re-renders.
@@ -146,14 +162,13 @@ export const renderWithContexts = (
   component: ReactElement,
   overrideLibContextProps: Partial<LibContextProps> = {},
   overrideThemeContextProps: Partial<ThemeContextProps> = {},
+  overrideNavigationContextProps: Partial<NavigationContextProps> = {},
   overrideFormsContextProps: Partial<FormsContextProps> = {},
   overrideScriptRunContextProps: Partial<ScriptRunContextProps> = {}
 ): RenderWithContextsResult => {
   const defaultLibContextProps = {
     isFullScreen: false,
     setFullScreen: vi.fn(),
-    onPageChange: vi.fn(),
-    currentPageScriptHash: "",
     libConfig: {},
     locale: "en-US",
     componentRegistry: new ComponentRegistry(mockEndpoints()),
@@ -163,6 +178,14 @@ export const renderWithContexts = (
     activeTheme: baseTheme,
     setTheme: vi.fn(),
     availableThemes: [],
+  }
+
+  const defaultNavigationContextProps = {
+    pageLinkBaseUrl: "",
+    currentPageScriptHash: "",
+    onPageChange: vi.fn(),
+    navSections: [],
+    appPages: [],
   }
 
   const defaultFormsContextProps = {
@@ -176,7 +199,7 @@ export const renderWithContexts = (
   }
 
   // Track current context values across rerenders
-  // Order matches provider nesting: LibContext → ThemeContext → FormsContext → ScriptRunContext
+  // Order matches provider nesting: LibContext → ThemeContext → NavigationContext → FormsContext → ScriptRunContext
   let currentLibContextProps = {
     ...defaultLibContextProps,
     ...overrideLibContextProps,
@@ -184,6 +207,10 @@ export const renderWithContexts = (
   let currentThemeContextProps = {
     ...defaultThemeContextProps,
     ...overrideThemeContextProps,
+  }
+  let currentNavigationContextProps = {
+    ...defaultNavigationContextProps,
+    ...overrideNavigationContextProps,
   }
   let currentFormsContextProps = {
     ...defaultFormsContextProps,
@@ -200,13 +227,17 @@ export const renderWithContexts = (
         <FlexContext.Provider value={flexContextValue}>
           <LibContext.Provider value={currentLibContextProps}>
             <ThemeContext.Provider value={currentThemeContextProps}>
-              <FormsContext.Provider value={currentFormsContextProps}>
-                <ScriptRunContext.Provider
-                  value={currentScriptRunContextProps}
-                >
-                  {children}
-                </ScriptRunContext.Provider>
-              </FormsContext.Provider>
+              <NavigationContext.Provider
+                value={currentNavigationContextProps}
+              >
+                <FormsContext.Provider value={currentFormsContextProps}>
+                  <ScriptRunContext.Provider
+                    value={currentScriptRunContextProps}
+                  >
+                    {children}
+                  </ScriptRunContext.Provider>
+                </FormsContext.Provider>
+              </NavigationContext.Provider>
             </ThemeContext.Provider>
           </LibContext.Provider>
         </FlexContext.Provider>
@@ -224,11 +255,12 @@ export const renderWithContexts = (
       newComponent: ReactElement,
       newLibContextProps?: Partial<LibContextProps>,
       newThemeContextProps?: Partial<ThemeContextProps>,
+      newNavigationContextProps?: Partial<NavigationContextProps>,
       newFormsContextProps?: Partial<FormsContextProps>,
       newScriptRunContextProps?: Partial<ScriptRunContextProps>
     ): void => {
       // Update context values if provided
-      // Order matches provider nesting: LibContext → ThemeContext → FormsContext → ScriptRunContext
+      // Order matches provider nesting: LibContext → ThemeContext → NavigationContext → FormsContext → ScriptRunContext
       if (newLibContextProps) {
         currentLibContextProps = {
           ...currentLibContextProps,
@@ -239,6 +271,12 @@ export const renderWithContexts = (
         currentThemeContextProps = {
           ...currentThemeContextProps,
           ...newThemeContextProps,
+        }
+      }
+      if (newNavigationContextProps) {
+        currentNavigationContextProps = {
+          ...currentNavigationContextProps,
+          ...newNavigationContextProps,
         }
       }
       if (newFormsContextProps) {
